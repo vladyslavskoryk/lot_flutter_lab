@@ -1,148 +1,114 @@
 import 'package:flutter/material.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'colors/colors.dart';
-import 'screens/home_screen.dart';
-import 'screens/list_screen.dart';
-import 'screens/profile_screen.dart';
-import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
 
-void main() {
-  runApp(MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'User App',
+      title: 'Flutter First App',
       theme: ThemeData(
-        primaryColor: AppColors.primarySwatch,
-        scaffoldBackgroundColor: Colors.white,
+        primarySwatch: Colors.blue,
       ),
-      home: WelcomeScreen(), // Set WelcomeScreen as the initial screen
+      home: const MyHomePage(),
     );
   }
 }
 
-// WelcomeScreen
-class WelcomeScreen extends StatelessWidget {
-  Future<bool> _checkInternetConnection() async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-    return connectivityResult != ConnectivityResult.none;
-  }
-
-  void _showNoInternetDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('No Internet Connection'),
-        content:
-            Text('Please connect to the internet for the best experience.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('OK', style: TextStyle(color: AppColors.primaryRed)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _navigateWithCheck(
-      BuildContext context, Widget destination) async {
-    final hasInternet = await _checkInternetConnection();
-    if (!hasInternet) {
-      _showNoInternetDialog(context);
-    }
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => destination),
-    );
-  }
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Welcome', style: TextStyle(color: Colors.white)),
-        backgroundColor: AppColors.primaryRed,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-          Image.asset(
-          'assets/logo.png', // Save the generated logo as assets/logo.png
-          height: 300,
-        ),
-            Text(
-              'Welcome to UniList!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryRed,
-              ),
-            ),
-            SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: () => _navigateWithCheck(context, LoginScreen()),
-              child: Text('Login', style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryRed,
-              ),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _navigateWithCheck(context, RegisterScreen()),
-              child: Text('Register', style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryRed,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  MyHomePageState createState() => MyHomePageState();
 }
 
-// MainScreen with Bottom Navigation
-class MainScreen extends StatefulWidget {
-  @override
-  _MainScreenState createState() => _MainScreenState();
-}
+class MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
+  final TextEditingController _controller = TextEditingController();
 
-class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
-
-  final _pages = [
-    {'widget': HomeScreen(), 'label': 'Home', 'icon': Icons.home},
-    {'widget': ListScreen(), 'label': 'List', 'icon': Icons.list},
-    {'widget': ProfileScreen(), 'label': 'Profile', 'icon': Icons.person},
-  ];
-
-  void _onItemTapped(int index) {
+  void _incrementCounter() {
     setState(() {
-      _selectedIndex = index;
+      final String inputText = _controller.text;
+
+      if (inputText == 'Avada Kedavra') {
+        _counter = 0;
+      } else {
+        final int? inputNumber = int.tryParse(inputText);
+        if (inputNumber != null) {
+          _counter += inputNumber;
+        }
+      }
+
+      _controller.clear();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex]['widget'] as Widget,
-      bottomNavigationBar: BottomNavigationBar(
-        items: _pages
-            .map((page) => BottomNavigationBarItem(
-                  icon: Icon(page['icon'] as IconData),
-                  label: page['label'] as String,
-                ))
-            .toList(),
-        currentIndex: _selectedIndex,
-        selectedItemColor: AppColors.primaryRed,
-        onTap: _onItemTapped,
+      appBar: AppBar(
+        title: const Text(
+          'Interactive Input and Counter',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.transparent, // Make AppBar transparent
+        elevation: 0, // Remove AppBar shadow
+      ),
+      extendBodyBehindAppBar: true,
+      // Allows the body to extend behind the AppBar
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/background_harry_potter2.png'),
+            // Background image from assets
+            fit: BoxFit.cover, // Cover the entire background
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text(
+                'Current value of the counter:',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 24, // Increase font size
+                ),
+              ),
+              Text(
+                '$_counter',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: Colors.black,
+                  fontSize: 48, // Increase counter font size
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  controller: _controller,
+                  decoration: const InputDecoration(
+                    labelText: 'Enter a number or "Avada Kedavra"',
+                    labelStyle: TextStyle(color: Colors.white),
+                  ),
+                  keyboardType: TextInputType.text,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20, // Increase input text size
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: _incrementCounter,
+                child: const Text('Update Counter'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
+
+

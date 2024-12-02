@@ -69,6 +69,7 @@ flutter:
         - asset: assets/fonts/Poppins-Bold.ttf
           weight: 700
   assets:
+    - assets/background_harry_potter2.png
     - assets/logo_app.png
     - assets/logo.png
     - assets/logo_12.png
