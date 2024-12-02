@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-
 import '../colors/colors.dart';
 import '../storage/user_storage.dart';
 import '../utils/validation.dart';
+import '../main.dart'; // Import the main.dart file to access MainScreen
 
 class RegisterScreen extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -10,21 +10,15 @@ class RegisterScreen extends StatelessWidget {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  TextEditingController();
   final UserStorage _userStorage = LocalUserStorage();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Register', style: TextStyle(color: Colors.white)),
+        title: Text('Register'),
         backgroundColor: AppColors.primaryRed,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -44,10 +38,17 @@ class RegisterScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 24),
                 // Email Field
-                _buildTextField(
+                TextFormField(
                   controller: _emailController,
-                  hint: 'E-mail',
-                  icon: Icons.email,
+                  decoration: InputDecoration(
+                    hintText: 'E-mail',
+                    prefixIcon: Icon(Icons.email, color: AppColors.primaryRed),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                  ),
                   validator: (value) {
                     if (value == null || !isValidEmail(value)) {
                       return 'Invalid email';
@@ -57,24 +58,38 @@ class RegisterScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 16),
                 // Name Field
-                _buildTextField(
+                TextFormField(
                   controller: _nameController,
-                  hint: 'Name',
-                  icon: Icons.person,
+                  decoration: InputDecoration(
+                    hintText: 'Name',
+                    prefixIcon: Icon(Icons.person, color: AppColors.primaryRed),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                  ),
                   validator: (value) {
-                    if (value == null || !isValidName(value)) {
-                      return 'Name cannot contain numbers';
+                    if (value == null || value.isEmpty) {
+                      return 'Name cannot be empty';
                     }
                     return null;
                   },
                 ),
                 SizedBox(height: 16),
                 // Password Field
-                _buildTextField(
+                TextFormField(
                   controller: _passwordController,
-                  hint: 'Password',
-                  icon: Icons.lock,
                   obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: 'Password',
+                    prefixIcon: Icon(Icons.lock, color: AppColors.primaryRed),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                  ),
                   validator: (value) {
                     if (value == null || value.length < 6) {
                       return 'Password must be at least 6 characters';
@@ -84,11 +99,18 @@ class RegisterScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 16),
                 // Confirm Password Field
-                _buildTextField(
+                TextFormField(
                   controller: _confirmPasswordController,
-                  hint: 'Confirm Password',
-                  icon: Icons.lock,
                   obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: 'Confirm Password',
+                    prefixIcon: Icon(Icons.lock, color: AppColors.primaryRed),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                  ),
                   validator: (value) {
                     if (value != _passwordController.text) {
                       return 'Passwords do not match';
@@ -109,7 +131,12 @@ class RegisterScreen extends StatelessWidget {
                         content: Text('Registered successfully'),
                         backgroundColor: Colors.green,
                       ));
-                      Navigator.pop(context);
+                      // Redirect to MainScreen after registration
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => MainScreen()),
+                            (route) => false, // Clear navigation stack
+                      );
                     }
                   },
                   child: Text(
@@ -127,29 +154,6 @@ class RegisterScreen extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-    required IconData icon,
-    bool obscureText = false,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      validator: validator,
-      decoration: InputDecoration(
-        hintText: hint,
-        prefixIcon: Icon(icon, color: AppColors.primaryRed),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
         ),
       ),
     );
