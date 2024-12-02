@@ -39,8 +39,14 @@ dependencies:
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo_app.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -54,9 +60,18 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
   assets:
-    - assets/background.jpg
+    - assets/logo_app.png
     - assets/logo.png
+    - assets/logo_12.png
+    - assets/background.jpg
+    - assets/logo_expired.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
