@@ -1,29 +1,104 @@
 import 'package:flutter/material.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../colors/colors.dart';
 import '../storage/user_storage.dart';
-import '../utils/validation.dart';
+import '../main.dart';
 
 class LoginScreen extends StatelessWidget {
   final VoidCallback? onLoginSuccess;
+  final UserStorage _userStorage = LocalUserStorage();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final UserStorage _userStorage = LocalUserStorage();
 
-  LoginScreen({this.onLoginSuccess}); // Add optional parameter
+  LoginScreen({this.onLoginSuccess});
+
+  Future<bool> _checkInternetConnection() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult != ConnectivityResult.none;
+  }
+
+  void _showDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK', style: TextStyle(color: AppColors.primaryRed)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleLogin(BuildContext context) async {
+    if (_formKey.currentState!.validate()) {
+      final hasInternet = await _checkInternetConnection();
+
+      if (!hasInternet) {
+        _showDialog(
+          context,
+          'No Internet',
+          'Please check your internet connection and try again.',
+        );
+        return;
+      }
+
+      final user = await _userStorage.getUser();
+      if (user != null &&
+          user['email'] == _emailController.text &&
+          user['password'] == _passwordController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Login successful'),
+          backgroundColor: Colors.green,
+        ));
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => MainScreen()),
+              (route) => false,
+        );
+      } else {
+        _showDialog(
+          context,
+          'Login Failed',
+          'Invalid email or password.',
+        );
+      }
+    }
+  }
+
+  Future<void> _autoLogin(BuildContext context) async {
+    final user = await _userStorage.getUser();
+    if (user != null) {
+      final hasInternet = await _checkInternetConnection();
+
+      if (!hasInternet) {
+        _showDialog(
+          context,
+          'Limited Access',
+          'You are logged in offline. Some features may not work.',
+        );
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Call auto-login logic on build
+    WidgetsBinding.instance.addPostFrameCallback((_) => _autoLogin(context));
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Login'),
         backgroundColor: AppColors.primaryRed,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -41,88 +116,45 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 24),
-                _buildTextField(
+                TextFormField(
                   controller: _emailController,
-                  hint: 'E-mail',
-                  icon: Icons.email,
+                  decoration: InputDecoration(
+                    hintText: 'E-mail',
+                    prefixIcon: Icon(Icons.email, color: AppColors.primaryRed),
+                  ),
                   validator: (value) {
-                    if (value == null || !isValidEmail(value)) {
-                      return 'Invalid email';
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter an email';
                     }
                     return null;
                   },
                 ),
                 SizedBox(height: 16),
-                _buildTextField(
+                TextFormField(
                   controller: _passwordController,
-                  hint: 'Password',
-                  icon: Icons.lock,
                   obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: 'Password',
+                    prefixIcon: Icon(Icons.lock, color: AppColors.primaryRed),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Password cannot be empty';
+                      return 'Please enter a password';
                     }
                     return null;
                   },
                 ),
                 SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      final user = await _userStorage.getUser();
-                      if (user != null &&
-                          user['email'] == _emailController.text &&
-                          user['password'] == _passwordController.text) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Login successful'),
-                          backgroundColor: Colors.green,
-                        ));
-                        if (onLoginSuccess != null) {
-                          onLoginSuccess!(); // Call the success callback
-                        }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Invalid email or password'),
-                          backgroundColor: Colors.red,
-                        ));
-                      }
-                    }
-                  },
+                  onPressed: () => _handleLogin(context),
                   child: Text('Login'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryRed,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    minimumSize: Size(double.infinity, 50),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-    required IconData icon,
-    bool obscureText = false,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      validator: validator,
-      decoration: InputDecoration(
-        hintText: hint,
-        prefixIcon: Icon(icon, color: AppColors.primaryRed),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
         ),
       ),
     );
