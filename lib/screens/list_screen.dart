@@ -118,6 +118,10 @@ class _ListScreenState extends State<ListScreen> {
                   itemBuilder: (context, index) {
                     final university = universities[index];
                     return ListTile(
+                      leading: Icon(
+                        Icons.school,
+                        color: AppColors.primaryRed,
+                      ),
                       title: Text(university.name),
                       subtitle: Text(university.country),
                     );
